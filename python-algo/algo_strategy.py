@@ -56,7 +56,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
-        self.starter_strategy(game_state)
+        self.mystrat(game_state)
 
         game_state.submit_turn()
 
@@ -65,6 +65,66 @@ class AlgoStrategy(gamelib.AlgoCore):
     NOTE: All the methods after this point are part of the sample starter-algo
     strategy and can safely be replaced for your custom algo.
     """
+
+    def setTurretsRow(self, game_state, x, y):
+        turret_locations = []
+        for i in range(x, 25, 5):
+            turret_locations.append([i,13])
+        game_state.attempt_spawn(TURRET, turret_locations)
+
+
+    def mystrat(self, game_state):
+        side = random.randint(0, 1)
+        if game_state.turn_number == 1:
+            self.setTurretsRow(3, 13)
+        if game_state.turn_number == 2:
+            self.setTurretsRow(3, 13)
+
+        if game_state.turn_number == 3:
+            self.setTurretsRow(3, 13)
+
+
+        if side:
+            turret_locations = []
+            # if game_state.turn_number > 5:
+            for i in range(6, 21, 5):
+                one_turr = turret_locations.append([i,11])
+            # for i in range(5, 20, 4):
+            #     one_turr = turret_locations.append([i,9])
+            game_state.attempt_spawn(TURRET, turret_locations)
+
+            # support_locations = [[26, 12], [25, 11], [24, 10], [23, 9], [22, 8], [21, 7], [21,10], [22,11], [23,12], [24,13]]
+            support_locations = []
+            start = [21,7]
+            for i in range(7):
+                start = [start[0] + 1, start[1] + 1]
+                support_locations.append(start)
+
+            start = [19, 8]
+            for i in range(6):
+                start = [start[0] + 1, start[1] + 1]
+                support_locations.append(start)
+
+        else:
+            support_locations = []
+            start = [1,12]
+            for i in range(7):
+                start = [start[0] + 1, start[1] - 1]
+                support_locations.append(start)
+
+            start = [2, 13]
+            for i in range(6):
+                start = [start[0] + 1, start[1] - 1]
+                support_locations.append(start)
+
+
+
+        game_state.attempt_spawn(SUPPORT, support_locations)
+
+
+        scout_locations = [[13,0]]
+        game_state.attempt_spawn(SCOUT, scout_locations, 1000)
+
 
     def starter_strategy(self, game_state):
         """
