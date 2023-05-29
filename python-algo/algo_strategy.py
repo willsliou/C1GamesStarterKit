@@ -66,65 +66,96 @@ class AlgoStrategy(gamelib.AlgoCore):
     strategy and can safely be replaced for your custom algo.
     """
 
+
+            # if game_state.turn_number > 5:
+            # for i in range(6, 21, 5):
+            #     one_turr = turret_locations.append([i,11])
+            # # for i in range(5, 20, 4):
+            # #     one_turr = turret_locations.append([i,9])
+            # game_state.attempt_spawn(TURRET, turret_locations)
     def setTurretsRow(self, game_state, x, y):
         turret_locations = []
         for i in range(x, 25, 5):
             turret_locations.append([i,13])
         game_state.attempt_spawn(TURRET, turret_locations)
 
+    def setInterceptor(self, game_state, x,y):
+        deploy_locations = [x,y]
+        # break shit for entry
+        if game_state.turn_number == 10:
+            if game_state.get_resource(MP) >= game_state.type_cost(INTERCEPTOR)[MP] and len(deploy_locations) > 0:
+                deploy_locations = self.filter_blocked_locations(deploy_locations, game_state)
+            # Choose a random deploy location.            
+            game_state.attempt_spawn(INTERCEPTOR, deploy_locations)
 
-    def mystrat(self, game_state):
-        side = random.randint(0, 1)
-        if game_state.turn_number == 1:
-            self.setTurretsRow(3, 13)
-        if game_state.turn_number == 2:
-            self.setTurretsRow(3, 13)
-
-        if game_state.turn_number == 3:
-            self.setTurretsRow(3, 13)
-
-
+    def setSupports(self, game_state, x, y, numSupports, side):
+        support_locations = []
+        start = [x,y]
+        # Right side
         if side:
-            turret_locations = []
-            # if game_state.turn_number > 5:
-            for i in range(6, 21, 5):
-                one_turr = turret_locations.append([i,11])
-            # for i in range(5, 20, 4):
-            #     one_turr = turret_locations.append([i,9])
-            game_state.attempt_spawn(TURRET, turret_locations)
-
-            # support_locations = [[26, 12], [25, 11], [24, 10], [23, 9], [22, 8], [21, 7], [21,10], [22,11], [23,12], [24,13]]
-            support_locations = []
-            start = [21,7]
-            for i in range(7):
-                start = [start[0] + 1, start[1] + 1]
+            for i in range(numSupports):
                 support_locations.append(start)
-
-            start = [19, 8]
-            for i in range(6):
                 start = [start[0] + 1, start[1] + 1]
-                support_locations.append(start)
-
+        
         else:
-            support_locations = []
-            start = [1,12]
-            for i in range(7):
-                start = [start[0] + 1, start[1] - 1]
+            for i in range(numSupports):
                 support_locations.append(start)
-
-            start = [2, 13]
-            for i in range(6):
                 start = [start[0] + 1, start[1] - 1]
-                support_locations.append(start)
-
 
 
         game_state.attempt_spawn(SUPPORT, support_locations)
 
 
+    def mystrat(self, game_state):
+        # if game_state.turn_number == 1:        # Set default turrets in beginning
+        self.setTurretsRow(game_state, 3, 13)
+    
+        # Choose left or right side to attack
+        # side = random.randint(0, 1)
+        side = 1
+        if side <= 10 or side > 20:
+            # support_locations = [[26, 12], [25, 11], [24, 10], [23, 9], [22, 8], [21, 7], [21,10], [22,11], [23,12], [24,13]]
+            x = 21
+            y = 7
+            numSupports = 7
+            self.setSupports(game_state, x, y, numSupports, side) # on the edges
+
+
+            if game_state.turn_number > 5:
+                x = 19
+                y = 8
+                numSupports = 6
+                self.setSupports(game_state, x, y, numSupports, side) # on the edges
+
+            if game_state.turn_number % 5 == 0:
+                self.setInterceptor(game_state, 13, 0)
+ 
+
+
+        elif side > 10:
+            self.setSupports(game_state, 1, 12, 7, side)
+            
+            if game_state.turn_number > 5:
+                x = 4
+                y = 13
+                self.setSupports(game_state, x, y, 5, side)
+            
+            if game_state.turn_number % 5 == 0:
+                self.setInterceptor(game_state, 14, 0)
+
+
         scout_locations = [[13,0]]
         game_state.attempt_spawn(SCOUT, scout_locations, 1000)
 
+
+        # Optional turrets behind defaults after expended MP
+        if game_state.turn_number == 2:
+            self.setTurretsRow(game_state, 6, 11)
+        if game_state.turn_number > 3:
+            self.setTurretsRow(game_state, 5, 9)
+
+
+        side += 1
 
     def starter_strategy(self, game_state):
         """
